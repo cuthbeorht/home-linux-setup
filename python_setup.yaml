@@ -1,0 +1,34 @@
+- name: First playbook
+  hosts: local
+  tasks:
+
+    - name: Ping my hosts
+      ansible.builtin.ping:
+
+    - name: Upgrade all pacakges
+      ansible.builtin.dnf:
+        name: "*"
+        state: latest
+    
+    - name: Install basic packges
+      ansible.builtin.dnf:
+        name:
+          - python3-devel
+          - python3-pip
+          - vim
+      register: packages_to_install_output
+    
+    - name: Packages to install
+      ansible.builtin.debug:
+        var:  packages_to_install_output
+    
+    - name: Install UV
+      ansible.builtin.shell:
+        cmd: curl -LsSf https://astral.sh/uv/install.sh | sh
+        creates: ~/.local/bin/uv
+      register: install_uv_output
+      become: false
+
+    - name: Packages to install
+      ansible.builtin.debug:
+        var:  install_uv_output
