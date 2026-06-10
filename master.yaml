@@ -1,0 +1,14 @@
+- name: Refresh pacakges
+  import_playbook: refresh_packages.yaml
+
+- name: Install Python
+  import_playbook: python_setup.yaml
+
+- name: Install Docker
+  import_playbook: install_docker.yaml
+
+- name: Install Oh My ZSH
+  import_playbook: install_ohmyzsh.yaml
+
+- name: Install Powerlevel 10k
+  import_playbook: install_powerlevel10k.yaml

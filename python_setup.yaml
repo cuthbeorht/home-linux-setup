@@ -5,11 +5,6 @@
     - name: Ping my hosts
       ansible.builtin.ping:
 
-    - name: Upgrade all pacakges
-      ansible.builtin.dnf:
-        name: "*"
-        state: latest
-    
     - name: Install basic packges
       ansible.builtin.dnf:
         name:
@@ -17,6 +12,7 @@
           - python3-pip
           - vim
       register: packages_to_install_output
+      become: true
     
     - name: Packages to install
       ansible.builtin.debug:

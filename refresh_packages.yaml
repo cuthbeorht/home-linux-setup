@@ -1,0 +1,24 @@
+- name: Refresh packages and rebuild Metadata
+  hosts: local
+  vars_prompt:
+    - name: run_metadata_rebuild
+      prompt: Do you want to rebuild the RPM database?
+      private: no
+      default: "no"
+  tasks:    
+    
+    - name: Clean
+      ansible.builtin.command:
+        cmd: dnf clean all
+      when: run_metadata_rebuild | bool
+
+    - name: Rebuild RPM
+      ansible.builtin.command:
+        cmd: rpm --rebuilddb
+      when: run_metadata_rebuild | bool
+
+    - name: Upgrade all pacakges
+      ansible.builtin.dnf:
+        name: "*"
+        state: latest   
+      become: true     
