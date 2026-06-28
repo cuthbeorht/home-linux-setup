@@ -1,11 +1,11 @@
 - name: Install Oh My ZSH
   hosts: local
   become: true
-  vars:
-    # target_user: "{{ ansible_user_id }}"
-    target_user: "davide"
-    # target_home: "{{ ansible_env.HOME }}"
-    target_home: "/home/davide/"
+  # vars:
+  #   # target_user: "{{ ansible_user_id }}"
+  #   target_user: "{{ ansible_env.USER}}"
+  #   # target_home: "{{ ansible_env.HOME }}"
+  #   target_home: "{{ ansible_env.HOME }}"
   
   tasks:
     - name: Install required system packages necessary for ZSH
@@ -16,6 +16,7 @@
           - curl
           - util-linux-user
         state: present
+      become: true
     
     - name: Change default shell
       ansible.builtin.user:
@@ -47,7 +48,7 @@
       ansible.builtin.file:
         path: "/home/{{ target_user }}/install_ohmyzsh.sh"
         state: absent
-      become: true
+      become: false
       become_user: "{{ target_user }}"
 
     - name: Change user's default shell to zsh
