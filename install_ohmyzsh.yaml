@@ -1,29 +1,25 @@
 - name: Install Oh My ZSH
   hosts: local
   become: true
-  # vars:
-  #   # target_user: "{{ ansible_user_id }}"
-  #   target_user: "{{ ansible_env.USER}}"
-  #   # target_home: "{{ ansible_env.HOME }}"
-  #   target_home: "{{ ansible_env.HOME }}"
-  
+  vars:
+    target_user: "{{ ansible_user_id }}"
+    target_home: "{{ ansible_env.HOME }}"
+
   tasks:
-    - name: Install required system packages necessary for ZSH
+    - name: Install required system packages for ZSH
       ansible.builtin.package:
-        name: 
+        name:
           - zsh
           - git
           - curl
-          - util-linux-user
         state: present
-      become: true
-    
-    - name: Change default shell
-      ansible.builtin.user:
-        name: "{{ target_user }}"
-        shell: /bin/zsh
-      become: true
-    
+
+    - name: Install chsh utility (RedHat)
+      ansible.builtin.package:
+        name: util-linux-user
+        state: present
+      when: ansible_os_family == 'RedHat'
+
     - name: Check if Oh My Zsh is already installed
       ansible.builtin.stat:
         path: "{{ target_home }}/.oh-my-zsh"
@@ -49,10 +45,8 @@
         path: "/home/{{ target_user }}/install_ohmyzsh.sh"
         state: absent
       become: false
-      become_user: "{{ target_user }}"
 
     - name: Change user's default shell to zsh
       ansible.builtin.user:
         name: "{{ target_user }}"
         shell: /bin/zsh
-      become: yes

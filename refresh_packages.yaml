@@ -1,24 +1,36 @@
-- name: Refresh packages and rebuild Metadata
+- name: Refresh packages and rebuild metadata
   hosts: local
+  become: true
   vars_prompt:
     - name: run_metadata_rebuild
-      prompt: Do you want to rebuild the RPM database?
+      prompt: "Rebuild package database? (RedHat: RPM db, Debian: apt cache)"
       private: no
       default: "no"
-  tasks:    
-    
-    - name: Clean
+
+  tasks:
+    - name: Clean DNF cache (RedHat)
       ansible.builtin.command:
         cmd: dnf clean all
-      when: run_metadata_rebuild | bool
+      when: (run_metadata_rebuild | bool) and ansible_os_family == 'RedHat'
 
-    - name: Rebuild RPM
+    - name: Rebuild RPM database (RedHat)
       ansible.builtin.command:
         cmd: rpm --rebuilddb
-      when: run_metadata_rebuild | bool
+      when: (run_metadata_rebuild | bool) and ansible_os_family == 'RedHat'
 
-    - name: Upgrade all pacakges
+    - name: Clean APT cache (Debian)
+      ansible.builtin.command:
+        cmd: apt-get clean
+      when: (run_metadata_rebuild | bool) and ansible_os_family == 'Debian'
+
+    - name: Upgrade all packages (RedHat)
       ansible.builtin.dnf:
         name: "*"
-        state: latest   
-      become: true     
+        state: latest
+      when: ansible_os_family == 'RedHat'
+
+    - name: Upgrade all packages (Debian)
+      ansible.builtin.apt:
+        upgrade: dist
+        update_cache: true
+      when: ansible_os_family == 'Debian'

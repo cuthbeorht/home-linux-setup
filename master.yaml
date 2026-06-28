@@ -12,3 +12,6 @@
 
 - name: Install Powerlevel 10k
   import_playbook: install_powerlevel10k.yaml
+
+- name: Development dependencies
+  import_playbook: dev_dependencies.yaml

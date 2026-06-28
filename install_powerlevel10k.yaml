@@ -1,49 +1,63 @@
-- name: Install Oh My ZSH
+- name: Install Powerlevel10k
   hosts: local
   become: true
   vars:
-    # target_user: "{{ ansible_user_id }}"
-    target_user: "davide"
-    # target_home: "{{ ansible_env.HOME }}"
-    target_home: "/home/davide/"
+    target_user: "{{ ansible_user_id }}"
+    target_home: "{{ ansible_env.HOME }}"
+
   tasks:
     - name: Set user shell to zsh
       ansible.builtin.user:
         name: "{{ target_user }}"
-        shell: /bin/zsh        
-      become: true
+        shell: /bin/zsh
+
+    - name: Fix ownership of Oh My ZSH themes directory
+      ansible.builtin.file:
+        path: "{{ target_home }}/.oh-my-zsh/custom/themes"
+        owner: "{{ target_user }}"
+        group: "{{ target_user }}"
+        recurse: true
+        state: directory
+        mode: '0755'
 
     - name: Install PowerLevel10K
       ansible.builtin.git:
         repo: https://github.com/romkatv/powerlevel10k.git
-        dest: "/home/{{ target_user }}/.oh-my-zsh/custom/themes/powerlevel10k"
+        dest: "{{ target_home }}/.oh-my-zsh/custom/themes/powerlevel10k"
         depth: 1
+        force: true
+      become_user: "{{ target_user }}"
 
     - name: Download NerdFonts
       ansible.builtin.get_url:
         url: https://github.com/ryanoasis/nerd-fonts/releases/download/v3.4.0/Meslo.zip
-        dest: "/home/{{ target_user }}/Meslo.zip"
+        dest: "{{ target_home }}/Meslo.zip"
+      become_user: "{{ target_user }}"
 
-    - name: Create temp directory
+    - name: Fix ownership of Meslo directory if it exists
       ansible.builtin.file:
-        path: "/home/{{ target_user }}/Meslo"
+        path: "{{ target_home }}/Meslo"
+        owner: "{{ target_user }}"
+        group: "{{ target_user }}"
+        recurse: true
         state: directory
         mode: '0755'
 
-    - name: Install font files
+    - name: Extract font files
       ansible.builtin.unarchive:
-        src: "/home/{{ target_user }}/Meslo.zip"
-        dest: "/home/{{ target_user }}/Meslo"
+        src: "{{ target_home }}/Meslo.zip"
+        dest: "{{ target_home }}/Meslo"
+      become_user: "{{ target_user }}"
 
-    - name: Move font files to fonts directory
+    - name: Move font files to system fonts directory
       ansible.builtin.copy:
-        src: "/home/{{ target_user }}/Meslo"
+        src: "{{ target_home }}/Meslo"
         dest: /usr/share/fonts/Meslo
         owner: root
-      become: true
 
-    - name: Update .zshrc
+    - name: Update .zshrc with Powerlevel10k theme
       ansible.builtin.lineinfile:
-        path: "/home/{{ target_user }}/.zshrc"
+        path: "{{ target_home }}/.zshrc"
         insertafter: EOF
-        line: "source /home/{{ target_user }}/.oh-my-zsh/custom/themes/powerlevel10k/powerlevel10k.zsh-theme"
+        line: "source {{ target_home }}/.oh-my-zsh/custom/themes/powerlevel10k/powerlevel10k.zsh-theme"
+      become: false

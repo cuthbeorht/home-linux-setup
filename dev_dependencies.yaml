@@ -1,0 +1,63 @@
+- name: Install development dependencies
+  hosts: local
+  become: true
+
+  tasks:
+    - name: Install Golang
+      ansible.builtin.package:
+        name: golang
+        state: present
+
+    # --- Terraform (RedHat/Fedora) ---
+    - name: Install Terraform dependencies (RedHat)
+      ansible.builtin.package:
+        name: dnf-plugins-core
+        state: present
+      when: ansible_os_family == 'RedHat'
+
+    - name: Add HashiCorp repository (RedHat)
+      ansible.builtin.get_url:
+        url: https://rpm.releases.hashicorp.com/fedora/hashicorp.repo
+        dest: /etc/yum.repos.d/hashicorp.repo
+        owner: root
+        group: root
+        mode: '0644'
+      when: ansible_os_family == 'RedHat'
+
+    # --- Terraform (Debian/Ubuntu) ---
+    - name: Install Terraform dependencies (Debian)
+      ansible.builtin.package:
+        name:
+          - gnupg
+          - software-properties-common
+          - apt-transport-https
+        state: present
+      when: ansible_os_family == 'Debian'
+
+    - name: Add HashiCorp GPG key (Debian)
+      ansible.builtin.apt_key:
+        url: https://apt.releases.hashicorp.com/gpg
+        state: present
+      when: ansible_os_family == 'Debian'
+
+    - name: Add HashiCorp repository (Debian)
+      ansible.builtin.apt_repository:
+        repo: "deb [arch=amd64] https://apt.releases.hashicorp.com {{ ansible_distribution_release }} main"
+        state: present
+        filename: hashicorp
+      when: ansible_os_family == 'Debian'
+
+    # --- Install Terraform (both distros) ---
+    - name: Install Terraform
+      ansible.builtin.package:
+        name: terraform
+        state: present
+
+    - name: Verify Terraform installation
+      ansible.builtin.command: terraform --version
+      register: terraform_version
+      changed_when: false
+
+    - name: Print Terraform version
+      ansible.builtin.debug:
+        var: terraform_version.stdout

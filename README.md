@@ -14,6 +14,6 @@ ansible-galaxy role install geerlingguy.docker
 Run the ansible playbook:
 
 ```bash
-ansible-playbook -i inventory.ini master.yaml -e "target_home=/home/cuth target_user=cuth" -K --become
+ansible-playbook -i inventory.ini master.yaml -e "target_home=$HOME target_user=$USER" -K --become
 ```
 

@@ -1,23 +1,20 @@
-- name: First playbook
+- name: Setup Python
   hosts: local
-  tasks:
+  vars:
+    python_dev_package: "{{ 'python3-devel' if ansible_os_family == 'RedHat' else 'python3-dev' }}"
 
+  tasks:
     - name: Ping my hosts
       ansible.builtin.ping:
 
-    - name: Install basic packges
-      ansible.builtin.dnf:
+    - name: Install basic packages
+      ansible.builtin.package:
         name:
-          - python3-devel
+          - "{{ python_dev_package }}"
           - python3-pip
           - vim
-      register: packages_to_install_output
       become: true
-    
-    - name: Packages to install
-      ansible.builtin.debug:
-        var:  packages_to_install_output
-    
+
     - name: Install UV
       ansible.builtin.shell:
         cmd: curl -LsSf https://astral.sh/uv/install.sh | sh
@@ -25,6 +22,6 @@
       register: install_uv_output
       become: false
 
-    - name: Packages to install
+    - name: UV install output
       ansible.builtin.debug:
-        var:  install_uv_output
+        var: install_uv_output

@@ -2,7 +2,7 @@
   hosts: local
   vars:
     docker_users:
-      - fedora
+      - "{{ ansible_user_id }}"
   roles:
     - geerlingguy.docker
   become: true
